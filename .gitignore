@@ -34,3 +34,6 @@
 # Directories
 .idea
 cmake-build-debug
+
+# Compressed solutions
+*.tar.gz
