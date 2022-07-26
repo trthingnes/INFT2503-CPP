@@ -7,7 +7,7 @@ const int length = 5;
 int main() {
     cout << "Du må skrive " << length << " tall." << endl;
 
-    int low = 0, mid = 0, high = 0;
+    int low, mid, high;
     double temp;
 
     for (int i = 1; i <= length; i++) {
@@ -26,6 +26,4 @@ int main() {
     }
 
     cout << "Du skrev inn " << low << " lav(e), " << mid << " middels og " << high << " høy(e) temperaturer." << endl;
-
-    return 0;
 }
