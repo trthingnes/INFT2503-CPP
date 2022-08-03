@@ -2,6 +2,10 @@
 
 Fraction::Fraction() : numerator(0), denominator(1) {}
 
+Fraction::Fraction(const Fraction &fraction) {
+    set(fraction.numerator, fraction.denominator);
+}
+
 Fraction::Fraction(int numberator, int denominator) {
     set(numberator, denominator);
 }

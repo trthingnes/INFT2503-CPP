@@ -5,10 +5,11 @@
 
 class Fraction {
 public:
-    int numerator;
-    int denominator;
+    int numerator{};
+    int denominator{};
 
     Fraction();
+    Fraction(const Fraction &fraction);
     Fraction(int numerator, int denominator);
     void set(int numerator_, int denominator_ = 1);
     Fraction operator+(const Fraction &other) const;
@@ -33,7 +34,7 @@ public:
     friend Fraction operator-(const int &i, const Fraction &f);
 private:
     void reduce();
-    int compare(const Fraction &other) const;
+    [[nodiscard]] int compare(const Fraction &other) const;
 };
 
 #endif
