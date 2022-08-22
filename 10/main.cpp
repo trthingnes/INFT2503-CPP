@@ -19,6 +19,10 @@
 
 #include <iostream>
 
+const int w_height = 600;
+const int w_width = 800;
+const int fps_lim = 60;
+
 extern "C" {
 // Implementation is in glut_shapes.c
 void glutSolidCube(GLdouble size);
@@ -120,6 +124,7 @@ class World {
 
 public:
   btDiscreteDynamicsWorld dynamics;
+  btTransform transform;
 
   Ground ground;
   Sphere ground_sphere, falling_sphere;
@@ -128,8 +133,6 @@ public:
   World() : dispatcher(&collision_configuration),
             dynamics(&dispatcher, &broadphase, &solver, &collision_configuration),
             cubes(6) {
-    dynamics.setGravity(btVector3(0, -10.0, 0));
-
     //Add objects to the physics engine
     dynamics.addRigidBody(&ground.body);
     dynamics.addRigidBody(&ground_sphere.body);
@@ -137,7 +140,23 @@ public:
     for (auto &cube : cubes)
       dynamics.addRigidBody(&cube.body);
 
-    btTransform transform;
+    falling_sphere.body.setActivationState(4);
+    dynamics.setGravity(btVector3(0, -10.0, 0));
+
+    reset();
+  }
+
+  void draw() {
+    ground.draw();
+    ground_sphere.draw();
+    falling_sphere.draw();
+    for (auto &cube : cubes)
+      cube.draw();
+  }
+
+  void reset() {
+    falling_sphere.body.setGravity(btVector3(0, 0, 0));
+    falling_sphere.body.setLinearVelocity(btVector3(0, 0, 0));
 
     //Position ground
     transform.setIdentity();
@@ -166,12 +185,13 @@ public:
     cubes[5].body.setCenterOfMassTransform(transform);
   }
 
-  void draw() {
-    ground.draw();
-    ground_sphere.draw();
-    falling_sphere.draw();
-    for (auto &cube : cubes)
-      cube.draw();
+  void drop() {
+    falling_sphere.body.setGravity(btVector3(0.0, -10.0, 0.0));
+  }
+
+  void set_sphere_pos(float hpos, float vpos) {
+    transform.setOrigin(btVector3(hpos * 0.2 - 0.25, vpos * 0.2 + 1, 0.0));
+    falling_sphere.body.setCenterOfMassTransform(transform);
   }
 };
 
@@ -183,8 +203,8 @@ class Application {
 
 public:
   Application() : context_settings(24),
-                  window(sf::VideoMode(800, 600), "SFML Example", sf::Style::Default, context_settings) {
-    window.setFramerateLimit(144);
+                  window(sf::VideoMode(w_width, w_height), "SFML Example", sf::Style::Default, context_settings) {
+    window.setFramerateLimit(fps_lim);
     window.setVerticalSyncEnabled(true);
 
     //Various settings
@@ -227,7 +247,7 @@ public:
     bool running = true;
     while (running) {
       //Handle events
-      sf::Event event;
+      sf::Event event{};
       while (window.pollEvent(event)) {
         ImGui::SFML::ProcessEvent(event);
         if (event.type == sf::Event::KeyPressed) {
@@ -245,18 +265,15 @@ public:
 
       ImGui::Begin("ImGui");
       if (ImGui::Button("Restart game")) {
-        // Implementation needed
+        world.reset();
       }
       if (ImGui::Button("Drop ball")) {
-        // Implementation needed
+        world.drop();
       }
-      float horizontal_position;
-      if (ImGui::SliderFloat("Horizontal ball position", &horizontal_position, 0.0, 10.0)) {
-        // Implementation needed
-      }
-      float vertical_position;
-      if (ImGui::VSliderFloat("Vertical ball position", {20, 100}, &vertical_position, 0.0, 10.0)) {
-        // Implementation needed
+      float horizontal_position, vertical_position;
+      if (ImGui::SliderFloat("Horizontal ball position", &horizontal_position, 0.0, 10.0) ||
+          ImGui::VSliderFloat("Vertical ball position", {20, 100}, &vertical_position, 0.0, 10.0)) {
+        world.set_sphere_pos(horizontal_position, vertical_position);
       }
       ImGui::End();
 
